@@ -2,6 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cookieSession = require('cookie-session');
 const authRouter = require('./routes/admin/auth');
+const adminProductsRouter = require('./routes/admin/products');
+const productsRouter = require('./routes/products');
+const cartsRouter = require('./routes/carts');
 
 const app = express(); // all different things our app can do
 
@@ -14,7 +17,9 @@ app.use(cookieSession({
 }));
 
 app.use(authRouter);
-
+app.use(productsRouter);
+app.use(adminProductsRouter);
+app.use(cartsRouter);
 // to listen incoming traffic coming from browser
 app.listen(3000, ()=> {
     console.log("Listening");

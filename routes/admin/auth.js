@@ -1,5 +1,6 @@
 const express = require('express');
-const { check, validationResult } = require('express-validator');
+
+const { handleErrors } = require('./middlewares');
 
 const usersRepo = require('../../repositories/users');
 const signupTemplate = require('../../views/admin/auth/signup');
@@ -27,16 +28,12 @@ router.post('/signup',
     requirePassword,
     requirePasswordConfirmation
     ],
+    handleErrors(signupTemplate),
 async(req,res) => {
     // will be invoked before we have full access to request body, as 
     // this runs on the url request received
-    const errors = validationResult(req);
 
-    if(!errors.isEmpty()){
-        return res.send(signupTemplate({ req, errors}));
-    }
-
-    const {email, password, passwordConfirmation} = req.body;
+    const {email, password } = req.body;
 
     // Create a user in our user repo to represent this person
     const user = await usersRepo.create({email, password});
@@ -44,7 +41,7 @@ async(req,res) => {
     // Store the id of that user inside the users cookie
     req.session.userId = user.id; //added by cookie session
 
-    res.send('Account created!!!');
+    res.redirect('/admin/products');
 });
 
 router.get('/signout', (req,res)=>{
@@ -59,21 +56,17 @@ router.get('/signin',(req,res)=>{
 //post request handler
 router.post('/signin',[
     requireEmailExists
-    ,requireValidPasswordForUser
-], async(req,res) => {
-    const errors = validationResult(req);
-
-    if(!errors.isEmpty()){
-        return res.send(signinTemplate({ errors }));
-    }
-
+    ,requireValidPasswordForUser],
+    handleErrors(signinTemplate), 
+async(req,res) => {
+    
     const{email} = req.body;
 
     const user = await usersRepo.getOneBy({email});
 
     req.session.userId = user.id;
 
-    res.send('You are signed in!!');
+    res.redirect('/admin/products');
 
 });
 
